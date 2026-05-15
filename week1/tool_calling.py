@@ -70,7 +70,22 @@ TOOL_REGISTRY: Dict[str, Callable[..., str]] = {
 # ==========================
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+You are a coding agent. 
+You should write a function call that return a newline-delimited list of "name: return_type" for each top-level function.
+Output ONLY a valid JSON object. Do not include any other text, explanations, or greeting.
+Below are tools that you can call:
+<tool>
+output_every_func_return_type
+</tool>
+Format are as follows:
+```json
+{
+  "tool": <tool_name>
+  "args": {}
+}
+```
+"""
 
 
 def resolve_path(p: str) -> str:

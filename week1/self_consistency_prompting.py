@@ -9,7 +9,16 @@ load_dotenv()
 NUM_RUNS_TIMES = 5
 
 # TODO: Fill this in! Try to get as close to 100% correctness across all runs as possible.
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+You are a math master.
+To solve the problem correctly, you must follow these steps carefully:
+1. Identify all the known mathematical quantities.
+2. Identify what needs to be solved.
+3. Write out equations explicitly before computing them.
+4. Calculate the result step-by-step.
+5. After getting an initial result, double-check your logic using a visual timeline or a reverse calculation (e.g., verifying if the segments add up to the total trip).
+Finally, provide the confirmed answer.
+"""
 
 USER_PROMPT = """
 Solve this problem, then give the final answer on the last line as "Answer: <number>".
