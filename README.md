@@ -1,4 +1,5 @@
 # Assignments for CS146S: The Modern Software Developer
+这是我对于 CS146S: The Modern Software Developer 这门课的作业的完成情况。
 
 This is the home of the assignments for [CS146S: The Modern Software Developer](https://themodernsoftware.dev), taught at Stanford University fall 2025.
 

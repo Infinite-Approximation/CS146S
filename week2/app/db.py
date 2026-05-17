@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
-from typing import Optional
-
+from typing import Optional, List
+from contextlib import contextmanager
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "data"
@@ -14,28 +14,30 @@ def ensure_data_directory_exists() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def get_connection() -> sqlite3.Connection:
+@contextmanager
+def get_connection():
+    """Provides a database connection with context management for automatic closing."""
     ensure_data_directory_exists()
-    connection = sqlite3.connect(DB_PATH)
-    connection.row_factory = sqlite3.Row
-    return connection
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 
 def init_db() -> None:
     ensure_data_directory_exists()
     with get_connection() as connection:
         cursor = connection.cursor()
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS notes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 content TEXT NOT NULL,
                 created_at TEXT DEFAULT (datetime('now'))
             );
-            """
-        )
-        cursor.execute(
-            """
+            """)
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS action_items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 note_id INTEGER,
@@ -44,8 +46,7 @@ def init_db() -> None:
                 created_at TEXT DEFAULT (datetime('now')),
                 FOREIGN KEY (note_id) REFERENCES notes(id)
             );
-            """
-        )
+            """)
         connection.commit()
 
 
@@ -112,5 +113,3 @@ def mark_action_item_done(action_item_id: int, done: bool) -> None:
             (1 if done else 0, action_item_id),
         )
         connection.commit()
-
-

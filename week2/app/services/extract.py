@@ -87,3 +87,42 @@ def _looks_imperative(sentence: str) -> bool:
         "investigate",
     }
     return first.lower() in imperative_starters
+
+
+def extract_action_items_llm(text: str) -> List[str]:
+    """
+    Extract action items using an LLM (Ollama).
+    Returns a list of strings representing the actionable items.
+    """
+    if not text.strip():
+        return []
+
+    system_prompt = (
+        "You are an expert action item extractor. Your task is to extract all actionable tasks, "
+        "to-dos, and clear action items from the provided text. "
+        "You MUST return the result STRICTLY as a JSON object containing a single key "
+        "'action_items' which maps to an array of strings. "
+        "Do not include any other text, explanations, or markdown formatting outside the JSON."
+    )
+
+    try:
+        response = chat(
+            model="llama3.1:8b",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": text},
+            ],
+            format="json",
+            options={"temperature": 0.0},
+        )
+
+        content = response.message.content
+        data = json.loads(content)
+        # Depending on how the model formats the JSON
+        if "action_items" in data and isinstance(data["action_items"], list):
+            return data["action_items"]
+
+        return []
+    except Exception as e:
+        print(f"Error during LLM extraction: {e}")
+        return []
