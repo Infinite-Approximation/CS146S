@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional
-
 from fastapi import APIRouter, HTTPException
 
 from .. import db
-from ..services.extract import extract_action_items, extract_action_items_llm
 from ..schemas import (
     ActionItemResponse,
     ExtractRequest,
@@ -13,6 +10,7 @@ from ..schemas import (
     MarkDoneRequest,
     MarkDoneResponse,
 )
+from ..services.extract import extract_action_items, extract_action_items_llm
 
 router = APIRouter(prefix="/action-items", tags=["action-items"])
 
@@ -23,7 +21,7 @@ def extract(payload: ExtractRequest) -> ExtractResponse:
     if not text:
         raise HTTPException(status_code=400, detail="text is required")
 
-    note_id: Optional[int] = None
+    note_id: int | None = None
     if payload.save_note:
         note_id = db.insert_note(text)
 
@@ -31,7 +29,7 @@ def extract(payload: ExtractRequest) -> ExtractResponse:
     ids = db.insert_action_items(items, note_id=note_id)
 
     # We fetch the inserted items back from the DB to get their full schema
-    all_items = db.list_action_items(note_id=note_id)
+    db.list_action_items(note_id=note_id)
     # Note: list_action_items will return all action items for this note_id
     # Since we just created it, it will be the ones we just inserted
     if note_id is None:
@@ -62,7 +60,7 @@ def extract_llm(payload: ExtractRequest) -> ExtractResponse:
     if not text:
         raise HTTPException(status_code=400, detail="text is required")
 
-    note_id: Optional[int] = None
+    note_id: int | None = None
     if payload.save_note:
         note_id = db.insert_note(text)
 
@@ -86,8 +84,8 @@ def extract_llm(payload: ExtractRequest) -> ExtractResponse:
     return ExtractResponse(note_id=note_id, items=action_items_resp)
 
 
-@router.get("", response_model=List[ActionItemResponse])
-def list_all(note_id: Optional[int] = None) -> List[ActionItemResponse]:
+@router.get("", response_model=list[ActionItemResponse])
+def list_all(note_id: int | None = None) -> list[ActionItemResponse]:
     rows = db.list_action_items(note_id=note_id)
     return [
         ActionItemResponse(
@@ -106,5 +104,5 @@ def mark_done(action_item_id: int, payload: MarkDoneRequest) -> MarkDoneResponse
     try:
         db.mark_action_item_done(action_item_id, payload.done)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
     return MarkDoneResponse(id=action_item_id, done=payload.done)

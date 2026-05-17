@@ -1,6 +1,3 @@
-import os
-import pytest
-
 from ..app.services.extract import extract_action_items, extract_action_items_llm
 
 
@@ -48,7 +45,7 @@ def test_extract_action_items_llm_bullets():
 def test_extract_action_items_llm_keywords():
     """Test that keywords (TODO:, action:, next:) line items are correctly extracted."""
     text = """
-    Meeting ended. 
+    Meeting ended.
     TODO: deploy to staging
     action: email the team
     next: order lunch

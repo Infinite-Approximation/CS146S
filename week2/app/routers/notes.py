@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List
-
 from fastapi import APIRouter, HTTPException
 
 from .. import db
@@ -10,12 +8,12 @@ from ..schemas import NoteCreate, NoteResponse
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 
-@router.get("", response_model=List[NoteResponse])
-def list_all_notes() -> List[NoteResponse]:
+@router.get("", response_model=list[NoteResponse])
+def list_all_notes() -> list[NoteResponse]:
     try:
         rows = db.list_notes()
     except Exception:
-        raise HTTPException(status_code=500, detail="Database error occurred.")
+        raise HTTPException(status_code=500, detail="Database error occurred.") from None
     return [
         NoteResponse(id=row["id"], content=row["content"], created_at=row["created_at"])
         for row in rows
@@ -30,8 +28,8 @@ def create_note(payload: NoteCreate) -> NoteResponse:
     try:
         note_id = db.insert_note(content)
         note = db.get_note(note_id)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Database error occurred.")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Database error occurred.") from None
 
     if not note:
         raise HTTPException(status_code=500, detail="Failed to retrieve created note.")
@@ -48,7 +46,7 @@ def get_single_note(note_id: int) -> NoteResponse:
     try:
         row = db.get_note(note_id)
     except Exception:
-        raise HTTPException(status_code=500, detail="Database error occurred.")
+        raise HTTPException(status_code=500, detail="Database error occurred.") from None
 
     if row is None:
         raise HTTPException(status_code=404, detail="note not found")

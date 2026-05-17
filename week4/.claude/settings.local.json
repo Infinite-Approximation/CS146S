@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make test *)",
+      "Bash(cp pre-commit-config.yaml .pre-commit-config.yaml)",
+      "Bash(pre-commit --version)",
+      "Bash(pip install *)",
+      "Bash(conda run *)",
+      "Bash(cd *)"
+    ]
+  }
+}

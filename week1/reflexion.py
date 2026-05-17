@@ -1,6 +1,6 @@
-import os
 import re
-from typing import Callable, List, Tuple
+from typing import Callable
+
 from dotenv import load_dotenv
 from ollama import chat
 
@@ -20,7 +20,7 @@ You are a coding assistant. Output ONLY a single fenced Python code block that d
 the function is_valid_password(password: str) -> bool. No prose or comments.
 Keep the implementation minimal.
 
-You previously wrote some code that failed some test cases. 
+You previously wrote some code that failed some test cases.
 Carefully analyze the provided failure logs to identify EXACTLY which validation rules were missing or incorrectly implemented.
 Then, rewrite the entire function to fix all the identified issues while keeping the previous correct implementations.
 """
@@ -28,11 +28,11 @@ Then, rewrite the entire function to fix all the identified issues while keeping
 
 # Ground-truth test suite used to evaluate generated code
 SPECIALS = set("!@#$%^&*()-_")
-TEST_CASES: List[Tuple[str, bool]] = [
-    ("Password1!", True),       # valid
-    ("password1!", False),      # missing uppercase
-    ("Password!", False),       # missing digit
-    ("Password1", False),       # missing special
+TEST_CASES: list[tuple[str, bool]] = [
+    ("Password1!", True),  # valid
+    ("password1!", False),  # missing uppercase
+    ("Password!", False),  # missing digit
+    ("Password1", False),  # missing special
 ]
 
 
@@ -55,8 +55,8 @@ def load_function_from_code(code_str: str) -> Callable[[str], bool]:
     return func
 
 
-def evaluate_function(func: Callable[[str], bool]) -> Tuple[bool, List[str]]:
-    failures: List[str] = []
+def evaluate_function(func: Callable[[str], bool]) -> tuple[bool, list[str]]:
+    failures: list[str] = []
     for pw, expected in TEST_CASES:
         try:
             result = bool(func(pw))
@@ -99,7 +99,7 @@ def generate_initial_function(system_prompt: str) -> str:
     return extract_code_block(response.message.content)
 
 
-def your_build_reflexion_context(prev_code: str, failures: List[str]) -> str:
+def your_build_reflexion_context(prev_code: str, failures: list[str]) -> str:
     """TODO: Build the user message for the reflexion step using prev_code and failures.
 
     Return a string that will be sent as the user content alongside the reflexion system prompt.
@@ -109,9 +109,9 @@ def your_build_reflexion_context(prev_code: str, failures: List[str]) -> str:
 
 def apply_reflexion(
     reflexion_prompt: str,
-    build_context: Callable[[str, List[str]], str],
+    build_context: Callable[[str, list[str]], str],
     prev_code: str,
-    failures: List[str],
+    failures: list[str],
 ) -> str:
     reflection_context = build_context(prev_code, failures)
     print(f"REFLECTION CONTEXT: {reflection_context}, {reflexion_prompt}")
@@ -129,7 +129,7 @@ def apply_reflexion(
 def run_reflexion_flow(
     system_prompt: str,
     reflexion_prompt: str,
-    build_context: Callable[[str, List[str]], str],
+    build_context: Callable[[str, list[str]], str],
 ) -> bool:
     # 1) Generate initial function
     initial_code = generate_initial_function(system_prompt)

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -16,7 +15,7 @@ class NoteResponse(BaseModel):
 
 class ActionItemResponse(BaseModel):
     id: int
-    note_id: Optional[int]
+    note_id: int | None
     text: str
     done: bool
     created_at: str
@@ -28,8 +27,8 @@ class ExtractRequest(BaseModel):
 
 
 class ExtractResponse(BaseModel):
-    note_id: Optional[int]
-    items: List[ActionItemResponse]
+    note_id: int | None
+    items: list[ActionItemResponse]
 
 
 class MarkDoneRequest(BaseModel):
