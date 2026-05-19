@@ -5,8 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import Note
-from ..schemas import NoteCreate, NoteRead
+from ..models import ActionItem, Note
+from ..schemas import ExtractResult, NoteCreate, NoteRead, NoteUpdate
+from ..services.extract import extract_action_items, extract_tags
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
@@ -37,6 +38,45 @@ def search_notes(q: Optional[str] = None, db: Session = Depends(get_db)) -> list
             .all()
         )
     return [NoteRead.model_validate(row) for row in rows]
+
+
+@router.post("/{note_id}/extract", response_model=ExtractResult)
+def extract_note(note_id: int, db: Session = Depends(get_db)) -> ExtractResult:
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    action_items_text = extract_action_items(note.content)
+    tags = extract_tags(note.content)
+
+    for desc in action_items_text:
+        item = ActionItem(description=desc, completed=False)
+        db.add(item)
+    db.flush()
+
+    return ExtractResult(action_items=action_items_text, tags=tags)
+
+
+@router.put("/{note_id}", response_model=NoteRead)
+def update_note(note_id: int, payload: NoteUpdate, db: Session = Depends(get_db)) -> NoteRead:
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    note.title = payload.title
+    note.content = payload.content
+    db.flush()
+    db.refresh(note)
+    return NoteRead.model_validate(note)
+
+
+@router.delete("/{note_id}")
+def delete_note(note_id: int, db: Session = Depends(get_db)) -> dict:
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    db.delete(note)
+    db.flush()
+    return {"detail": "Note deleted"}
 
 
 @router.get("/{note_id}", response_model=NoteRead)
